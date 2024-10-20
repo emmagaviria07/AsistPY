@@ -14,6 +14,7 @@ import json
 import pandas as pd
 import numpy as np
 from PIL import Image
+from openai import OpenAI
 
 st.title('Analítica de datos con Agentes 🤖🔍')
 image = Image.open('data_analisis.png')
