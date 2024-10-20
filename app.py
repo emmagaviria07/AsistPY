@@ -35,14 +35,36 @@ st.subheader('Te ayduaré a analizar los datos que cargues.')
 
 user_question = st.text_input("Que desesas saber de los datos?:")
 if user_question :
-    user_question=user_question+', busca  primero siempre la correspondencia entre las columnas y la información que te pida'
-  #try:
-
-        #if user_question:
-    agent = create_pandas_dataframe_agent(OpenAI(model_name="gpt-4o-mini",temperature=0, max_tokens=1500), df,allow_dangerous_code=True)
-    with get_openai_callback() as cb:
-        response = agent.run(user_question)
-       #print(cb)
-    st.write(response)
-  #except:
-   # pass    
+      prompt_aux=st.text_area( " ")
+      prompt = """
+      You are a highly knowledgeable scientific data frames analysis expert. The data is about electrical energy consumption 
+      and demand. 
+      
+      
+      Instructions:
+      - Your task is to examine the following dataframe in detail. 
+      - Provide a comprehensive, factual, and scientifically accurate explanation of what the data depicts
+      - If applicable, include any relevant scientific terminology to enhance the explanation
+      - Provide a comprehensive, factual, and scientifically accurate explanation of what the image depicts
+      - Highlight key elements and their significance, and present your analysis in clear, well-structured markdown format
+      - Write when occurs the major and minor consumption, date and hour when this be possible
+      - Explain always in spanish.
+      
+      """
+      
+      response = client.chat.completions.create(
+          model="o1-mini",
+          messages=[
+              {
+                  "role": "user",
+                  "content": [
+                      {
+                          "type": "text",
+                          "text": prompt
+                      },
+                  ],
+              }
+          ]
+      )
+      
+      st.write(response.choices[0].message.content)
