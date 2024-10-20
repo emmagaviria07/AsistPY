@@ -37,12 +37,10 @@ user_question = st.text_input("Que desesas saber de los datos?:")
 if user_question :
       prompt_aux=st.text_area( " ")
       prompt = f"""
-      You are a highly knowledgeable scientific data frames analysis expert. The data is about electrical energy consumption 
-      and demand. 
-      
+      You are a highly knowledgeable scientific data frames analysis expert. 
       
       Instructions:
-      - Your task is to examine the following dataframe in detail.
+      - Your task is to examine the following dataframe df in detail.
       - {user_question}
       - Provide a comprehensive, factual, and scientifically accurate explanation of what the data depicts
       - If applicable, include any relevant scientific terminology to enhance the explanation
