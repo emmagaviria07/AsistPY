@@ -35,7 +35,7 @@ st.subheader('Te ayduaré a analizar los datos que cargues.')
 
 user_question = st.text_input("Que desesas saber de los datos?:")
 if user_question :
-      
+      client = OpenAI()
       prompt = f"""
       You are a highly knowledgeable scientific data frames analysis expert. 
       
