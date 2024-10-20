@@ -51,7 +51,7 @@ if user_question :
       
       """
       
-      response = client.chat.completions.create(
+      response =  client.chat.completions.create(
           model="o1-mini",
           messages=[
               {
