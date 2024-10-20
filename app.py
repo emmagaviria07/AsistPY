@@ -53,7 +53,7 @@ if user_question :
       """
       
       response =  client.chat.completions.create(
-          model="o1-mini",
+          model="o1-preview",
           messages=[
               {
                   "role": "user",
