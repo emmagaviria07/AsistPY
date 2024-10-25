@@ -7,7 +7,6 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.llms import Anthropic
 from langchain.callbacks import get_openai_callback
 from langchain_experimental.agents import create_pandas_dataframe_agent
-from langchain.agents import AgentExecutor
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -34,88 +33,59 @@ if uploaded_file is not None:
 st.subheader('Te ayudaré a analizar los datos que cargues.')
 user_question = st.text_input("¿Qué deseas saber de los datos?:")
 
-def format_response_for_streamlit(df, response, question):
-    """Formatea la respuesta para mostrarla en Streamlit de manera apropiada"""
+def format_response_for_streamlit(response):
+    """Formatea la respuesta para mostrarla en Streamlit"""
+    # Eliminar los bloques de código Python si existen
+    clean_response = response.replace("```python", "").replace("```", "")
+    
+    # Mostrar la respuesta formateada
+    st.write("### Análisis:")
+    st.write(clean_response)
+    
+    # Si hay resultados numéricos, intentar mostrarlos como métricas
     try:
-        # Si la respuesta contiene código Python, intenta ejecutarlo
-        if "```python" in response:
-            code = response.split("```python")[1].split("```")[0]
-            exec(code, globals(), locals())
-            
-            # Si el código generó algún DataFrame, mostrarlo
-            for var in locals():
-                if isinstance(locals()[var], pd.DataFrame):
-                    st.write("Resultados encontrados:")
-                    st.dataframe(locals()[var])
-            
-            # Si hay análisis numérico, mostrar métricas
-            if any(word in question.lower() for word in ['promedio', 'media', 'máximo', 'mínimo', 'suma', 'total']):
-                col1, col2, col3 = st.columns(3)
-                if 'result' in locals():
-                    col1.metric("Resultado", locals()['result'])
-        
-        # Mostrar texto explicativo
-        st.write("Análisis:")
-        st.write(response.replace("```python", "").replace("```", ""))
-        
-        # Si la pregunta sugiere una visualización, intentar crearla
-        if any(word in question.lower() for word in ['gráfico', 'gráfica', 'visualiza', 'muestra', 'plot']):
-            if 'result' in locals() and isinstance(locals()['result'], pd.Series):
-                fig = px.bar(locals()['result'])
-                st.plotly_chart(fig)
-            
-    except Exception as e:
-        st.write(response)  # Si algo falla, mostrar la respuesta original
-        
+        if any(char.isdigit() for char in clean_response):
+            numbers = [float(s) for s in clean_response.split() if s.replace('.','',1).isdigit()]
+            if numbers:
+                st.metric("Valor encontrado", numbers[0])
+    except:
+        pass
+
 def custom_prompt(question):
     return f"""
-    Analiza los datos según esta pregunta: {question}
+    Analiza los siguientes datos según esta pregunta: {question}
     
-    Instrucciones:
-    1. Proporciona una respuesta clara y concisa
-    2. Si es relevante, incluye código Python que genere resultados visualizables
-    3. Si es apropiado, genera visualizaciones usando Streamlit (st.line_chart, st.bar_chart, etc.)
-    4. Usa st.write() para mostrar resultados
-    5. Para valores numéricos importantes, usa st.metric()
-    6. Si generas un DataFrame, usa st.dataframe()
+    Por favor:
+    1. Da una respuesta clara y concisa
+    2. Si son resultados numéricos, menciónalos claramente
+    3. Si es una tendencia o patrón, descríbelo específicamente
+    4. Usa formato de lista o puntos cuando sea apropiado
+    5. No muestres el código, solo los resultados
     
-    Por favor, estructura tu respuesta de manera que sea fácil de leer en Streamlit.
+    Responde en español.
     """
 
-if user_question and ke:
+if user_question and ke and uploaded_file is not None:
     try:
-        # Crear el agente con Claude
-        llm = Anthropic(
-            model="claude-2",
-            anthropic_api_key=ke,
-            temperature=0,
-            max_tokens=1500
-        )
-        
-        # Crear el agente con manejo de errores
-        agent = create_pandas_dataframe_agent(
-            llm,
-            df,
-            allow_dangerous_code=True,
-            verbose=True,
-            handle_parsing_errors=True,
-            return_intermediate_steps=False,
-        )
-        
-        # Crear el ejecutor del agente
-        agent_executor = AgentExecutor.from_agent_and_tools(
-            agent=agent,
-            tools=agent.tools,
-            handle_parsing_errors=True,
-            max_iterations=3
-        )
-        
-        # Ejecutar la consulta con el prompt personalizado
         with st.spinner('Analizando los datos...'):
-            response = agent_executor.run(custom_prompt(user_question))
-            format_response_for_streamlit(df, response, user_question)
-        
+            # Crear el agente con Claude
+            agent = create_pandas_dataframe_agent(
+                Anthropic(
+                    model="claude-2",
+                    temperature=0,
+                    max_tokens=1500,
+                    anthropic_api_key=ke
+                ),
+                df,
+                verbose=True,
+                handle_parsing_errors=True
+            )
+            
+            # Ejecutar la consulta
+            response = agent.run(custom_prompt(user_question))
+            
+            # Mostrar la respuesta formateada
+            format_response_for_streamlit(response)
+            
     except Exception as e:
-        st.error(f"Ocurrió un error: {str(e)}")
-        if hasattr(e, 'response'):
-            st.error(f"Detalles adicionales: {e.response}")
+        st.error(f"Ocurrió un error al analizar los datos: {str(e)}")
