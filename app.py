@@ -69,7 +69,7 @@ def custom_prompt(question):
     """
 
 if user_question and ke and uploaded_file is not None:
-    try:
+    #try:
         with st.spinner('Analizando los datos...'):
             # Crear el agente con Claude y parámetros correctos
             agent = create_pandas_dataframe_agent( ChatAnthropic(model='claude-3-haiku-20240307'),
@@ -92,5 +92,5 @@ if user_question and ke and uploaded_file is not None:
             # Mostrar la respuesta formateada
             #format_response_for_streamlit(response)
             st.write(response)
-    except Exception as e:
+    #except Exception as e:
         st.error(f"Ocurrió un error al analizar los datos: {str(e)}")
