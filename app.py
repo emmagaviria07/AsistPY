@@ -40,10 +40,10 @@ if user_question and ke:
         # Crear el agente con Claude
         agent = create_pandas_dataframe_agent(
             Anthropic(
-                model="claude-3-sonnet-20240229",  # Usar el modelo Claude más reciente
+                model="claude-2",  # Cambiado a claude-2 que es compatible
                 anthropic_api_key=ke,
                 temperature=0,
-                max_tokens_to_sample=1500
+                max_tokens=1500
             ),
             df,
             allow_dangerous_code=True,
