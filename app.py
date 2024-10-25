@@ -72,7 +72,7 @@ if user_question and ke and uploaded_file is not None:
             # Crear el agente con Claude y parámetros correctos
             agent = create_pandas_dataframe_agent(
                 Anthropic(
-                    model="claude-2",
+                    model="claude-3-haiku-20240307",
                     temperature=0,
                     max_tokens=1500,
                     anthropic_api_key=ke
