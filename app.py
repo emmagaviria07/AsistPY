@@ -15,6 +15,7 @@ import numpy as np
 from PIL import Image
 import plotly.express as px
 import plotly.graph_objects as go
+from langchain_anthropic import ChatAnthropic
 
 # Configuración de la página de Streamlit
 st.title('Analítica de datos con Agentes 🤖🔍')
