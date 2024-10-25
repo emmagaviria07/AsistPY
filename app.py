@@ -6,7 +6,8 @@ from langchain.vectorstores import FAISS
 from langchain.chains.question_answering import load_qa_chain
 from langchain.llms import Anthropic
 from langchain.callbacks import get_openai_callback
-from langchain_experimental.agents import create_pandas_dataframe_agent
+from langchain.agents.agent_types import AgentType
+from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -68,7 +69,7 @@ def custom_prompt(question):
 if user_question and ke and uploaded_file is not None:
     try:
         with st.spinner('Analizando los datos...'):
-            # Crear el agente con Claude
+            # Crear el agente con Claude y parámetros correctos
             agent = create_pandas_dataframe_agent(
                 Anthropic(
                     model="claude-2",
@@ -78,7 +79,9 @@ if user_question and ke and uploaded_file is not None:
                 ),
                 df,
                 verbose=True,
-                handle_parsing_errors=True
+                agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+                handle_parsing_errors=True,
+                allow_dangerous_code=True  # Agregado el parámetro requerido
             )
             
             # Ejecutar la consulta
