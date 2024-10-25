@@ -8,8 +8,6 @@ from langchain.llms import Anthropic
 from langchain.callbacks import get_openai_callback
 from langchain.agents.agent_types import AgentType
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
-from langchain.agents import AgentExecutor, Tool
-from langchain.agents import initialize_agent
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -36,98 +34,61 @@ if uploaded_file is not None:
 st.subheader('Te ayudaré a analizar los datos que cargues.')
 user_question = st.text_input("¿Qué deseas saber de los datos?:")
 
-def process_agent_output(output: str) -> str:
-    """Procesa la salida del agente para extraer solo la respuesta final"""
-    if 'Respuesta:' in output:
-        return output.split('Respuesta:')[-1].strip()
-    elif 'Final Answer:' in output:
-        return output.split('Final Answer:')[-1].strip()
-    else:
-        return output.split('\n')[-1].strip()
+def format_response_for_streamlit(response):
+    """Formatea la respuesta para mostrarla en Streamlit"""
+    # Eliminar los bloques de código Python si existen
+    clean_response = response.replace("```python", "").replace("```", "")
+    
+    # Mostrar la respuesta formateada
+    st.write("### Análisis:")
+    st.write(clean_response)
+    
+    # Si hay resultados numéricos, intentar mostrarlos como métricas
+    try:
+        if any(char.isdigit() for char in clean_response):
+            numbers = [float(s) for s in clean_response.split() if s.replace('.','',1).isdigit()]
+            if numbers:
+                st.metric("Valor encontrado", numbers[0])
+    except:
+        pass
 
 def custom_prompt(question):
     return f"""
-    Por favor analiza los datos respondiendo a esta pregunta: {question}
+    Analiza los siguientes datos según esta pregunta: {question}
     
-    Sigue estas instrucciones:
-    1. Analiza los datos necesarios
-    2. Proporciona una respuesta directa y clara en español
-    3. No incluyas el proceso de pensamiento ni el código en la respuesta final
-    4. Si el resultado incluye números, formatea los decimales a máximo 2 lugares
-    5. Estructura la respuesta en forma de lista si hay múltiples puntos
-    6. Usa un lenguaje formal pero fácil de entender
+    Por favor:
+    1. Da una respuesta clara y concisa
+    2. Si son resultados numéricos, menciónalos claramente
+    3. Si es una tendencia o patrón, descríbelo específicamente
+    4. Usa formato de lista o puntos cuando sea apropiado
+    5. No muestres el código, solo los resultados
     
-    Ejemplo de formato deseado:
-    "El promedio de edad es 34.5 años."
-    o
-    "Los principales resultados son:
-    - Valor máximo: 100
-    - Valor mínimo: 20
-    - Promedio: 45.5"
+    Responde en español.
     """
 
 if user_question and ke and uploaded_file is not None:
     try:
         with st.spinner('Analizando los datos...'):
-            # Configurar el LLM
-            llm = Anthropic(
-                model="claude-2",
-                temperature=0,
-                max_tokens=1500,
-                anthropic_api_key=ke
-            )
-            
-            # Crear el agente
+            # Crear el agente con Claude y parámetros correctos
             agent = create_pandas_dataframe_agent(
-                llm,
+                Anthropic(
+                    model="claude-2",
+                    temperature=0,
+                    max_tokens=1500,
+                    anthropic_api_key=ke
+                ),
                 df,
-                verbose=False,
+                verbose=True,
                 agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
                 handle_parsing_errors=True,
-                allow_dangerous_code=True
-            )
-            
-            # Configurar el ejecutor del agente
-            agent_executor = AgentExecutor.from_agent_and_tools(
-                agent=agent,
-                tools=agent.tools,
-                handle_parsing_errors=True,
-                max_iterations=3,
-                early_stopping_method="generate"
+                allow_dangerous_code=True  # Agregado el parámetro requerido
             )
             
             # Ejecutar la consulta
-            response = agent_executor.run(custom_prompt(user_question))
+            response = agent.run(custom_prompt(user_question))
             
-            # Procesar y mostrar la respuesta
-            clean_response = process_agent_output(response)
-            
-            # Mostrar resultados
-            st.success("Análisis completado")
-            
-            # Si la respuesta contiene múltiples puntos, mostrarlos como lista
-            if '-' in clean_response:
-                st.write("### Resultados:")
-                points = [point.strip() for point in clean_response.split('-') if point.strip()]
-                for point in points:
-                    st.write(f"• {point}")
-            else:
-                st.write("### Resultado:")
-                st.write(clean_response)
-            
-            # Si hay números en la respuesta, intentar mostrarlos como métricas
-            try:
-                import re
-                numbers = re.findall(r"[-+]?\d*\.\d+|\d+", clean_response)
-                if numbers and len(numbers) == 1:
-                    st.metric("Valor numérico encontrado", float(numbers[0]))
-                elif numbers and len(numbers) > 1:
-                    cols = st.columns(min(len(numbers), 3))
-                    for i, num in enumerate(numbers[:3]):
-                        cols[i].metric(f"Valor {i+1}", float(num))
-            except:
-                pass
+            # Mostrar la respuesta formateada
+            format_response_for_streamlit(response)
             
     except Exception as e:
-        st.error(f"Ocurrió un error al analizar los datos. Por favor, intenta reformular tu pregunta.")
-        st.error(f"Detalle del error: {str(e)}")
+        st.error(f"Ocurrió un error al analizar los datos: {str(e)}")
