@@ -72,7 +72,7 @@ if user_question and ke and uploaded_file is not None:
     try:
         with st.spinner('Analizando los datos...'):
             # Crear el agente con Claude y parámetros correctos
-            agent = create_pandas_dataframe_agent( ChatAnthropic(model='claude-3-opus-20240229'),
+            agent = create_pandas_dataframe_agent( ChatAnthropic(model='claude-3-haiku-20240307'),
                 #Anthropic(
                 #    model="claude-2.1",
                 #    temperature=0,
