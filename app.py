@@ -91,4 +91,5 @@ if user_question and ke and uploaded_file is not None:
             #format_response_for_streamlit(response)
             st.write(response)
     except Exception as e:
+         st.write("")
         #st.error(f"Ocurrió un error al analizar los datos: {str(e)}")
