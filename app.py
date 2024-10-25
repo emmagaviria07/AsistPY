@@ -69,13 +69,13 @@ def format_response_for_streamlit(response):
         st.write(clean_response)
         
         # Si hay resultados numéricos, intentar mostrarlos como métricas
-        try:
-            if any(char.isdigit() for char in clean_response):
-                numbers = [float(s) for s in clean_response.split() if s.replace('.','',1).isdigit()]
-                if numbers:
-                    st.metric("Valor encontrado", numbers[0])
-        except:
-            pass
+       # try:
+       #     if any(char.isdigit() for char in clean_response):
+       #         numbers = [float(s) for s in clean_response.split() if s.replace('.','',1).isdigit()]
+       #         if numbers:
+       #             st.metric("Valor encontrado", numbers[0])
+        #except:
+        #    pass
     except Exception as e:
         st.error(f"Error al formatear la respuesta: {str(e)}")
 
