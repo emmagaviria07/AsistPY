@@ -80,9 +80,8 @@ if user_question and ke and uploaded_file is not None:
                 df,
                 verbose=True,
                 agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-                handle_parsing_errors=True,
+                handle_parsing_errors=False,
                 allow_dangerous_code=True,  # Agregado el parámetro requerido
-                handle_parsing_errors=True
             )
             
             # Ejecutar la consulta
