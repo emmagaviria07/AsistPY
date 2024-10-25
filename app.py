@@ -12,6 +12,8 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 import plotly.express as px
+from langchain_anthropic import ChatAnthropic
+
 
 # Configuración de la página de Streamlit
 st.title('Analítica de datos con Agentes 🤖🔍')
@@ -70,13 +72,13 @@ if user_question and ke and uploaded_file is not None:
     try:
         with st.spinner('Analizando los datos...'):
             # Crear el agente con Claude y parámetros correctos
-            agent = create_pandas_dataframe_agent(
-                Anthropic(
-                    model="claude-2.1",
-                    temperature=0,
-                    max_tokens=1500,
-                    anthropic_api_key=ke
-                ),
+            agent = create_pandas_dataframe_agent( ChatAnthropic(model='claude-3-opus-20240229'),
+                #Anthropic(
+                #    model="claude-2.1",
+                #    temperature=0,
+                #    max_tokens=1500,
+                #    anthropic_api_key=ke
+                #),
                 df,
                 verbose=True,
                 agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
