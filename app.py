@@ -56,6 +56,7 @@ def format_response_for_streamlit(response):
 
 def custom_prompt(question):
     return f"""
+    Responde SIEMPRE en español.
     Analiza los siguientes datos según esta pregunta: {question}
     
     Por favor:
@@ -65,14 +66,14 @@ def custom_prompt(question):
     4. Usa formato de lista o puntos cuando sea apropiado
     5. No muestres el código, solo los resultados
     
-    Responde en español.
+    
     """
 
 if user_question and ke and uploaded_file is not None:
     try:
         with st.spinner('Analizando los datos...'):
             # Crear el agente con Claude y parámetros correctos
-            agent = create_pandas_dataframe_agent( ChatAnthropic(model='claude-3-haiku-20240307')
+            agent = create_pandas_dataframe_agent( ChatAnthropic(model='claude-3-haiku-20240307'),
                 #Anthropic(
                 #    model="claude-2.1",
                 #    temperature=0,
